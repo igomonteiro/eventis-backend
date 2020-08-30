@@ -1,0 +1,28 @@
+import { Router } from 'express';
+import UserController from './app/controllers/UserController';
+import SessionController from './app/controllers/SessionController';
+import ensureAuthenticated from './middlewares/ensureAuthenticated';
+import EventController from './app/controllers/EventController';
+import SubscriptionController from './app/controllers/SubscriptionController';
+
+
+const routes = new Router();
+
+// Sessão
+routes.post('/sessions', SessionController.create);
+
+// Users
+routes.get('/users', ensureAuthenticated, UserController.index);
+routes.post('/users', UserController.create);
+routes.put('/users', ensureAuthenticated, UserController.update);
+
+// Events
+routes.get('/events', ensureAuthenticated, EventController.listAllEvents);
+routes.get('/myEvents', ensureAuthenticated, EventController.listAllMyEvents);
+routes.post('/events', ensureAuthenticated, EventController.create);
+
+// Subscription
+routes.get('/subscription', ensureAuthenticated, SubscriptionController.mySubscritpions)
+routes.post('/subscription', ensureAuthenticated, SubscriptionController.newSubscription)
+
+export default routes;
