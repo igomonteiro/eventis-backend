@@ -12,14 +12,17 @@ const routes = new Router();
 routes.post('/sessions', SessionController.create);
 
 // Users
-routes.get('/users', ensureAuthenticated, UserController.index);
 routes.post('/users', UserController.create);
+routes.get('/users', ensureAuthenticated, UserController.index);
 routes.put('/users', ensureAuthenticated, UserController.update);
 
 // Events
+routes.post('/events', ensureAuthenticated, EventController.create);
 routes.get('/events', ensureAuthenticated, EventController.listAllEvents);
 routes.get('/myEvents', ensureAuthenticated, EventController.listAllMyEvents);
-routes.post('/events', ensureAuthenticated, EventController.create);
+routes.get('/myEvents/:id', ensureAuthenticated, EventController.getOneEvent);
+routes.put('/myEvents/:id', ensureAuthenticated, EventController.updateEvent);
+routes.delete('/myEvents/:id', ensureAuthenticated, EventController.deleteEvent);
 
 // Subscription
 routes.get('/subscription', ensureAuthenticated, SubscriptionController.mySubscritpions)
