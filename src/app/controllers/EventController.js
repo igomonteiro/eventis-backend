@@ -1,5 +1,6 @@
 import Evento from '../models/Evento';
 import { Op } from 'sequelize';
+import { startOfHour, parseISO, isBefore } from 'date-fns';
 import * as Yup from 'yup';
 
 import User from '../models/User';
@@ -32,6 +33,21 @@ class EventoController {
 
     if (!isCreator) {
       return res.status(401).json({ error: 'You can only create events with creator.'});
+    }
+
+    const hourStartDate = startOfHour(parseISO(date));
+    const hourStartLimitDate = startOfHour(parseISO(date_limit));
+
+    if (isBefore(hourStartDate, new Date())) {
+      return res.status(400).json({ error: 'Past dates are not permitted'});
+    }
+
+    if (isBefore(hourStartLimitDate, new Date())) {
+      return res.status(400).json({ error: 'Past dates are not permitted'});
+    }
+
+    if (isBefore(hourStartDate, hourStartLimitDate)) {
+      return res.status(400).json({ error: 'Limit date can not be greater than event date'});
     }
 
     const evento = await Evento.create({
@@ -88,20 +104,47 @@ class EventoController {
 
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation fails'});
+    } 
+
+    const event = await Evento.findByPk(req.params.id);  
+    
+    let hourStartDate;
+    let hourStartLimitDate; 
+
+    if (req.body.date == null && req.body.date_limit != null) {
+      hourStartDate = startOfHour(parseISO(event.date));
+      hourStartLimitDate = startOfHour(parseISO(req.body.date_limit));
+    } else if(req.body.date != null && req.body.date_limit == null) {
+      hourStartDate = startOfHour(parseISO(req.body.date));
+      hourStartLimitDate = startOfHour(parseISO(event.date_limit));
+    } else if (req.body.date != null && req.body.date_limit != null) {
+      hourStartDate = startOfHour(parseISO(req.body.date));
+      hourStartLimitDate = startOfHour(parseISO(req.body.date_limit));
     }
 
-    const event = await Evento.findByPk(req.params.id);    
+    if (isBefore(hourStartDate, new Date())) {
+      return res.status(400).json({ error: 'Past dates are not permitted'});
+    }
+
+    if (isBefore(hourStartLimitDate, new Date())) {
+      return res.status(400).json({ error: 'Past dates are not permitted'});
+    }
+
+    if (isBefore(hourStartDate, hourStartLimitDate)) {
+      return res.status(400).json({ error: 'Limit date can not be greater than event date'});
+    }
+    
     const eventUpdated = await event.update(req.body);
     res.json(eventUpdated);    
   }
 
-  async getOneEvent(req, res) {
+  async getEventById(req, res) {
     const event = await Evento.findOne({
       where: {
         id: req.params.id,
         creator_id: req.user.id
       }
-    })
+    });
 
     if (!event) {
       return res.status(400).json({ status: 'Only creator can get this event' });
