@@ -1,7 +1,9 @@
-import Evento from '../models/Evento';
+import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { startOfHour, parseISO, isBefore } from 'date-fns';
 import * as Yup from 'yup';
+import Evento from '../models/Evento';
+import Subscription from '../models/Subscription';
 
 import User from '../models/User';
 
@@ -31,6 +33,7 @@ class EventoController {
     // Checking creatorId
     const isCreator = await User.findOne({ where: { id: creator_id }});
 
+
     if (!isCreator) {
       return res.status(401).json({ error: 'You can only create events with creator.'});
     }
@@ -50,7 +53,10 @@ class EventoController {
       return res.status(400).json({ error: 'Limit date can not be greater than event date'});
     }
 
+    const id = crypto.randomBytes(4).toString('HEX');
+
     const evento = await Evento.create({
+      id,
       creator_id,
       title,
       description,
@@ -66,13 +72,31 @@ class EventoController {
   }
 
   async listAllEvents(req, res) {
-    const data = await Evento.findAll({
+    let data = await Evento.findAll({
       where: {
         creator_id: {
           [Op.not]: req.user.id,
         }
+      },
+    });
+
+    let subs = await Subscription.findAll({
+      where: {
+        user_id: req.user.id,
       }
     });
+
+    let subscribedEvents = [];
+
+    data.map(event => {
+      subs.map(sub => {
+        if ((event.id == sub.evento_id) && sub.canceled_at == null) {
+          subscribedEvents.push(event);
+        }
+      })
+    });
+
+    data = data.filter(el => !subscribedEvents.includes(el));
 
     res.json(data);
   }
@@ -154,7 +178,7 @@ class EventoController {
   }
 
   async deleteEvent(req, res) {
-   
+
     const event = await Evento.findOne({
       where: {
         id: req.params.id,
@@ -162,8 +186,26 @@ class EventoController {
       }
     });
 
+    const subscription = await Subscription.findAll({
+      include: {
+        model: Evento,
+        as: 'evento',
+        where: {
+          id: event.id
+        }
+      }
+    });
+
+    console.log(subscription);
+
     if (!event) {
       return res.status(400).json({ status: 'Only creator can delete this event' });
+    }
+
+    if (subscription.length > 0) {
+      subscription.map(async result => {
+        await result.destroy();
+      })
     }
 
     const result = await event.destroy();

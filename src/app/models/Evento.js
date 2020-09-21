@@ -7,6 +7,7 @@ class Evento extends Model {
       description: Sequelize.STRING,
       location: Sequelize.STRING,
       max_users: Sequelize.INTEGER,
+      subscribers: Sequelize.INTEGER,
       private_event: Sequelize.BOOLEAN,
       password: Sequelize.STRING,
       date: Sequelize.DATE,

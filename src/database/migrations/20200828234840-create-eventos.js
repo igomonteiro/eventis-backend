@@ -4,9 +4,8 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('eventos', {
       id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
       },
       title: {
@@ -24,6 +23,11 @@ module.exports = {
       max_users: {
         type: Sequelize.INTEGER,
         allowNull: false,
+      },
+      subscribers: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0
       },
       private_event: {
         type: Sequelize.BOOLEAN,

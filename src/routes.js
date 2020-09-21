@@ -25,7 +25,7 @@ routes.put('/myEvents/:id', ensureAuthenticated, EventController.updateEvent);
 routes.delete('/myEvents/:id', ensureAuthenticated, EventController.deleteEvent);
 
 // Subscription
-routes.get('/subscription', ensureAuthenticated, SubscriptionController.mySubscritpions)
-routes.post('/subscription', ensureAuthenticated, SubscriptionController.newSubscription)
-
+routes.get('/subscription', ensureAuthenticated, SubscriptionController.mySubscriptions);
+routes.post('/subscription', ensureAuthenticated, SubscriptionController.newSubscription);
+routes.put('/subscription', ensureAuthenticated, SubscriptionController.cancelSubscription);
 export default routes;
