@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize';
+import mongoose from 'mongoose';
 
 import User from '../app/models/User';
 import Evento from '../app/models/Evento';
@@ -11,6 +12,7 @@ const models = [User, Evento, Subscription];
 class Database {
   constructor() {
     this.init();
+    this.mongo();
   }
 
   init() {
@@ -19,6 +21,13 @@ class Database {
     models
       .map(model => model.init(this.connection))
       .map(model => model.associate && model.associate(this.connection.models));
+  }
+
+  mongo() {   
+    this.mongoConnection = mongoose.connect(
+      'mongodb://localhost:27017/eventis',
+      { useNewUrlParser: true, useUnifiedTopology: true }
+    );
   }
 }
 

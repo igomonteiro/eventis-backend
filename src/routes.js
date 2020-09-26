@@ -4,7 +4,7 @@ import SessionController from './app/controllers/SessionController';
 import ensureAuthenticated from './middlewares/ensureAuthenticated';
 import EventController from './app/controllers/EventController';
 import SubscriptionController from './app/controllers/SubscriptionController';
-
+import NotificationController from './app/controllers/NotificationController';
 
 const routes = new Router();
 
@@ -28,4 +28,9 @@ routes.delete('/myEvents/:id', ensureAuthenticated, EventController.deleteEvent)
 routes.get('/subscription', ensureAuthenticated, SubscriptionController.mySubscriptions);
 routes.post('/subscription', ensureAuthenticated, SubscriptionController.newSubscription);
 routes.put('/subscription', ensureAuthenticated, SubscriptionController.cancelSubscription);
+
+// Notification
+routes.get('/notifications', ensureAuthenticated, NotificationController.index);
+routes.put('/notifications/:id', ensureAuthenticated, NotificationController.update);
+
 export default routes;

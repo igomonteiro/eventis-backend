@@ -1,6 +1,8 @@
 import { Op } from 'sequelize';
 import Evento from '../models/Evento';
 import Subscription from '../models/Subscription';
+import User from '../models/User';
+import Notification from '../schemas/Notification';
 
 class SubscriptionController {
   async newSubscription(req, res) {
@@ -28,6 +30,8 @@ class SubscriptionController {
       }
     });
 
+    const user = await User.findByPk(req.user.id);
+
     if (subscritpionExists) {
       const subscription = await subscritpionExists.update({
         canceled_at: null,
@@ -41,6 +45,11 @@ class SubscriptionController {
 
       await event.update({
         subscribers: newSubscribers,
+      });
+
+      await Notification.create({
+        content: `${user.name} se inscreveu no seu evento: ${event.title}`,
+        user: event.creator_id,
       });
 
       return res.json(subscription);
@@ -59,6 +68,11 @@ class SubscriptionController {
 
     await event.update({
       subscribers: newSubscribers,
+    });
+
+    await Notification.create({
+      content: `${user.name} se inscreveu no seu evento: ${event.title}`,
+      user: event.creator_id,
     });
 
     return res.json(subscription);
@@ -85,19 +99,30 @@ class SubscriptionController {
         user_id: req.user.id
       }
     });
+
+    const user = await User.findOne({
+      where: {
+        id: req.user.id
+      }
+    })
     
-    const evento = await Evento.findOne({
+    const event = await Evento.findOne({
       where: {
         id: subscription.evento_id,
       }
     });
 
-    evento.update({
-      subscribers: evento.subscribers - 1,
+    event.update({
+      subscribers: event.subscribers - 1,
     });
 
     await subscription.update({
       canceled_at: new Date(Date.now()),
+    });
+
+    await Notification.create({
+      content: `${user.name} cancelou a participação no seu evento: ${event.title}`,
+      user: event.creator_id,
     });
 
     res.json(subscription);
