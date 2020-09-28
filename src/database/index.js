@@ -2,12 +2,13 @@ import Sequelize from 'sequelize';
 import mongoose from 'mongoose';
 
 import User from '../app/models/User';
+import File from '../app/models/File';
 import Evento from '../app/models/Evento';
 import Subscription from '../app/models/Subscription';
 
 import databaseConfig from '../config/database';
 
-const models = [User, Evento, Subscription];
+const models = [User, Evento, Subscription, File];
 
 class Database {
   constructor() {

@@ -1,12 +1,17 @@
 import { Router } from 'express';
+import multer from 'multer';
+import multerConfig from './config/multer';
+
 import UserController from './app/controllers/UserController';
 import SessionController from './app/controllers/SessionController';
 import ensureAuthenticated from './middlewares/ensureAuthenticated';
 import EventController from './app/controllers/EventController';
 import SubscriptionController from './app/controllers/SubscriptionController';
 import NotificationController from './app/controllers/NotificationController';
+import FileController from './app/controllers/FileController';
 
 const routes = new Router();
+const upload = multer(multerConfig);
 
 // Sessão
 routes.post('/sessions', SessionController.create);
@@ -32,5 +37,8 @@ routes.put('/subscription', ensureAuthenticated, SubscriptionController.cancelSu
 // Notification
 routes.get('/notifications', ensureAuthenticated, NotificationController.index);
 routes.put('/notifications/:id', ensureAuthenticated, NotificationController.update);
+
+// Files
+routes.post('/files', upload.single('file'), ensureAuthenticated, FileController.create);
 
 export default routes;

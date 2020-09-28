@@ -33,9 +33,6 @@ class SubscriptionController {
     const user = await User.findByPk(req.user.id);
 
     if (subscritpionExists) {
-      const subscription = await subscritpionExists.update({
-        canceled_at: null,
-      });
 
       let newSubscribers = event.subscribers + 1;
 
@@ -43,22 +40,21 @@ class SubscriptionController {
         return res.status(401).json({ error: 'The event has reached the limit of subscribers' });
       }
 
+      const subscription = await subscritpionExists.update({
+        canceled_at: null,
+      });
+
       await event.update({
         subscribers: newSubscribers,
       });
 
       await Notification.create({
-        content: `${user.name} se inscreveu no seu evento: ${event.title}`,
+        content: `${user.name} se inscreveu no seu evento "${event.title}"`,
         user: event.creator_id,
       });
 
       return res.json(subscription);
     }
-
-    const subscription = await Subscription.create({
-      user_id: req.user.id,
-      evento_id: event.id,
-    });
 
     let newSubscribers = event.subscribers + 1;
 
@@ -66,12 +62,17 @@ class SubscriptionController {
       return res.status(401).json({ error: 'The event has reached the limit of subscribers' });
     }
 
+    const subscription = await Subscription.create({
+      user_id: req.user.id,
+      evento_id: event.id,
+    });
+
     await event.update({
       subscribers: newSubscribers,
     });
 
     await Notification.create({
-      content: `${user.name} se inscreveu no seu evento: ${event.title}`,
+      content: `${user.name} se inscreveu no seu evento "${event.title}"`,
       user: event.creator_id,
     });
 
@@ -121,7 +122,7 @@ class SubscriptionController {
     });
 
     await Notification.create({
-      content: `${user.name} cancelou a participação no seu evento: ${event.title}`,
+      content: `${user.name} cancelou a participação no seu evento "${event.title}"`,
       user: event.creator_id,
     });
 

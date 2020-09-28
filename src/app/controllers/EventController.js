@@ -14,7 +14,7 @@ class EventoController {
       title: Yup.string().required(),
       description: Yup.string(),
       location: Yup.string().required(),
-      max_users: Yup.number().required().positive().integer(),
+      max_users: Yup.number().required().positive().integer().moreThan(0),
       private_event: Yup.bool().required(),
       password: Yup.string().when('private_event', {
         is: true,
@@ -76,7 +76,7 @@ class EventoController {
       where: {
         creator_id: {
           [Op.not]: req.user.id,
-        }
+        },
       },
     });
 
@@ -97,6 +97,9 @@ class EventoController {
     });
 
     data = data.filter(el => !subscribedEvents.includes(el));
+    data = data.filter(el =>  !isBefore(el.date_limit, new Date()));
+    data = data.filter(el =>  el.max_users != el.subscribers );
+
 
     res.json(data);
   }
@@ -116,7 +119,7 @@ class EventoController {
       title: Yup.string(),
       description: Yup.string(),
       location: Yup.string(),
-      max_users: Yup.number().positive().integer(),
+      max_users: Yup.number().positive().integer().moreThan(0),
       private_event: Yup.bool(),
       password: Yup.string().when('private_event', {
         is: true,
