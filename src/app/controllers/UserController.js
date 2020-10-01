@@ -12,9 +12,9 @@ class UserController {
   async create(req, res) {
 
     const schema = Yup.object().shape({
-      name: Yup.string().required(),
+      name: Yup.string().required().min(6).max(46),
       email: Yup.string().required().email(),
-      password: Yup.string().required().min(6),
+      password: Yup.string().required().min(6).max(24),
       confirmPassword: Yup.string().when('password', (password, field) => 
         password ? field.required().oneOf([Yup.ref('password')]) : field
       ),
@@ -39,7 +39,6 @@ class UserController {
   }
 
   async update(req, res) {
-
     const schema = Yup.object().shape({
       name: Yup.string(),
       oldPassword: Yup.string().min(6),

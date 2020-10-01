@@ -24,7 +24,9 @@ routes.put('/users', ensureAuthenticated, UserController.update);
 // Events
 routes.post('/events', ensureAuthenticated, EventController.create);
 routes.get('/events', ensureAuthenticated, EventController.listAllEvents);
+routes.get('/events/:id', ensureAuthenticated, EventController.filterById);
 routes.get('/myEvents', ensureAuthenticated, EventController.listAllMyEvents);
+routes.get('/myEvents/subscribers/:id', ensureAuthenticated, EventController.getAllSubscribers);
 routes.get('/myEvents/:id', ensureAuthenticated, EventController.getEventById);
 routes.put('/myEvents/:id', ensureAuthenticated, EventController.updateEvent);
 routes.delete('/myEvents/:id', ensureAuthenticated, EventController.deleteEvent);

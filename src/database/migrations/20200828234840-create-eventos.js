@@ -10,15 +10,26 @@ module.exports = {
       },
       title: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        validate: {
+          min: 4,
+          max: 25,
+        }
       },
       description: {
         type: Sequelize.STRING,
         allowNull: true,
+        validate: {
+          max: 225,
+        }
       },
       location: {
         type: Sequelize.STRING,
         allowNull: false,
+        validate: {
+          min: 10,
+          max: 55,
+        }
       },
       max_users: {
         type: Sequelize.INTEGER,
@@ -36,6 +47,10 @@ module.exports = {
       password: {
         type: Sequelize.STRING,
         allowNull: true,
+        validate: {
+          min: 6,
+          max: 24
+        }
       },
       creator_id: {
         type: Sequelize.INTEGER,

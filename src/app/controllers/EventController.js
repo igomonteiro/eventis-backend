@@ -3,6 +3,8 @@ import { Op } from 'sequelize';
 import { startOfHour, parseISO, isBefore } from 'date-fns';
 import * as Yup from 'yup';
 import Evento from '../models/Evento';
+import User from '../models/User';
+import File from '../models/File';
 import Subscription from '../models/Subscription';
 
 import User from '../models/User';
@@ -11,14 +13,14 @@ class EventoController {
   async create(req, res) {
     const schema = Yup.object().shape({
       creator_id: Yup.number().required(),
-      title: Yup.string().required(),
-      description: Yup.string(),
-      location: Yup.string().required(),
+      title: Yup.string().required().min(4).max(25),
+      description: Yup.string().max(225),
+      location: Yup.string().required().min(10).max(55),
       max_users: Yup.number().required().positive().integer().moreThan(0),
       private_event: Yup.bool().required(),
       password: Yup.string().when('private_event', {
         is: true,
-        then: Yup.string().required('Private event. Must have a password.')
+        then: Yup.string().required('Private event. Must have a password.').min(6).max(24)
       }),
       date_limit: Yup.date().required(),
       date: Yup.date().required(),
@@ -32,7 +34,6 @@ class EventoController {
 
     // Checking creatorId
     const isCreator = await User.findOne({ where: { id: creator_id }});
-
 
     if (!isCreator) {
       return res.status(401).json({ error: 'You can only create events with creator.'});
@@ -78,6 +79,20 @@ class EventoController {
           [Op.not]: req.user.id,
         },
       },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['name'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['id', 'path', 'url']
+            }
+          ]
+        }
+      ]
     });
 
     let subs = await Subscription.findAll({
@@ -100,7 +115,6 @@ class EventoController {
     data = data.filter(el =>  !isBefore(el.date_limit, new Date()));
     data = data.filter(el =>  el.max_users != el.subscribers );
 
-
     res.json(data);
   }
 
@@ -116,14 +130,14 @@ class EventoController {
 
   async updateEvent(req, res) {
     const schema = Yup.object().shape({
-      title: Yup.string(),
-      description: Yup.string(),
-      location: Yup.string(),
+      title: Yup.string().min(4).max(25),
+      description: Yup.string().max(225),
+      location: Yup.string().min(10).max(55),
       max_users: Yup.number().positive().integer().moreThan(0),
       private_event: Yup.bool(),
       password: Yup.string().when('private_event', {
         is: true,
-        then: Yup.string().required('Private event. Must have a password.')
+        then: Yup.string().required('Private event. Must have a password.').min(6).max(24)
       }),
       date_limit: Yup.date(),
       date: Yup.date(),
@@ -165,6 +179,33 @@ class EventoController {
     res.json(eventUpdated);    
   }
 
+  async filterById(req, res) {
+    const event = await Evento.findOne({
+      where: {
+        creator_id: {
+          [Op.not]: req.user.id,
+        },
+        id: req.params.id
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['name'],
+          include: [
+            {
+              model: File,
+              as: 'avatar',
+              attributes: ['id', 'path', 'url']
+            }
+          ]
+        }
+      ]
+    });
+
+    res.json(event);
+  }
+
   async getEventById(req, res) {
     const event = await Evento.findOne({
       where: {
@@ -181,7 +222,6 @@ class EventoController {
   }
 
   async deleteEvent(req, res) {
-
     const event = await Evento.findOne({
       where: {
         id: req.params.id,
@@ -218,6 +258,45 @@ class EventoController {
     }
 
     return res.status(200).json({ status: 'Event deleted' });
+  }
+
+  async getAllSubscribers(req, res) {
+    const subscribers = await Subscription.findAll({
+      where: {
+        user_id: {
+          [Op.not]: req.user.id
+        },
+      },
+      include: [
+        {
+          model: Evento,
+          as: 'evento',
+          where: {
+            id: req.params.id,
+            creator_id: req.user.id
+          },
+          attributes: ['title'],
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name'],
+          include: {
+            model: File,
+            as: 'avatar',
+            attributes: ['id', 'path', 'url']
+          }
+        }
+      ]
+    });
+
+    const data = subscribers.map(subs => ({
+      user: subs.user,
+      subscriptionDate: subs.updatedAt,
+      canceledDate: subs.canceled_at
+    }));
+
+    res.json(data);
   }
 }
 

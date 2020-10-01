@@ -12,6 +12,10 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
         allowNull: false,
+        validate: {
+          min: 6,
+          max: 46,
+        }
       },
       email: {
         type: Sequelize.STRING,
