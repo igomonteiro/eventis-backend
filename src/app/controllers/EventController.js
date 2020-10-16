@@ -203,7 +203,11 @@ class EventoController {
       ]
     });
 
-    res.json(event);
+    if (event.max_users === event.subscribers) {
+      return res.json([]);
+    }
+    
+    return res.json(event);
   }
 
   async getEventById(req, res) {

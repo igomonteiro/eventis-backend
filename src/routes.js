@@ -38,6 +38,7 @@ routes.put('/subscription', ensureAuthenticated, SubscriptionController.cancelSu
 
 // Notification
 routes.get('/notifications', ensureAuthenticated, NotificationController.index);
+routes.get('/notifications/upcoming', ensureAuthenticated, NotificationController.upcomingEventNotification);
 routes.put('/notifications/:id', ensureAuthenticated, NotificationController.update);
 
 // Files
